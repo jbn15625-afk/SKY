@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # sky
 
 A new Flutter project.
@@ -15,3 +16,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# SKY
+عمل تطبيق للمسلسلات
+>>>>>>> 6e0ae92d8fbf40a8bf40a574b51339023240355d
