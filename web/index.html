@@ -1,46 +1,602 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
-
   <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animerc | تسجيل الدخول</title>
+  <style>
+    :root {
+      --bg: #080711;
+      --panel: #14121f;
+      --pink: #ff3d68;
+      --purple: #7c3aed;
+      --text: #f7f5fc;
+      --muted: #a5a0b5;
+      --border: #302b40;
+    }
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="sky">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    * { box-sizing: border-box; }
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top, #25102d 0, var(--bg) 55%);
+      color: var(--text);
+      font-family: Tahoma, Arial, sans-serif;
+    }
 
-  <title>sky</title>
-  <link rel="manifest" href="manifest.json">
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+
+    .hidden { display: none !important; }
+
+    header {
+      padding: 20px 6%;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      font-size: 27px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: var(--pink);
+    }
+
+    .logo span { color: white; }
+
+    .container {
+      width: min(1050px, 92%);
+      margin: 45px auto;
+    }
+
+    .panel {
+      background: rgba(20, 18, 31, .96);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 26px;
+      box-shadow: 0 15px 55px #0005;
+    }
+
+    .auth-panel {
+      max-width: 430px;
+      margin: 45px auto;
+    }
+
+    h1 { font-size: 26px; margin: 0 0 10px; }
+    h2 { font-size: 20px; margin-top: 0; }
+    p { color: var(--muted); line-height: 1.8; }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin: 18px 0 8px;
+    }
+
+    input, textarea {
+      width: 100%;
+      background: #0c0a14;
+      border: 1px solid var(--border);
+      color: white;
+      padding: 13px;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--pink);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 85px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-weight: bold;
+      background: linear-gradient(100deg, var(--pink), var(--purple));
+      color: white;
+    }
+
+    .btn:disabled { opacity: .6; cursor: wait; }
+
+    .btn-secondary {
+      background: #262235;
+      border: 1px solid var(--border);
+    }
+
+    .full { width: 100%; margin-top: 20px; }
+
+    .switch {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .link {
+      background: none;
+      border: none;
+      color: #ff7695;
+      text-decoration: underline;
+      padding: 5px;
+    }
+
+    .status {
+      padding: 12px;
+      margin-top: 16px;
+      border-radius: 10px;
+      background: #262235;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+    }
+
+    .status.error { color: #ff9ba9; }
+    .status.success { color: #94f4bd; }
+
+    .top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 20px;
+      background: #352040;
+      color: #ff8baa;
+      font-size: 13px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .form-grid .wide { grid-column: 1 / -1; }
+    .form-grid label { margin-top: 5px; }
+
+    .section { margin-top: 28px; }
+
+    .items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 16px;
+    }
+
+    .item {
+      background: #0d0b16;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .item img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      background: #211a2c;
+    }
+
+    .item-body { padding: 14px; }
+    .item h3 { margin: 0 0 8px; }
+    .item p { font-size: 13px; }
+
+    .muted { color: var(--muted); font-size: 13px; }
+
+    @media (max-width: 600px) {
+      .container { margin: 25px auto; }
+      .panel { padding: 18px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-grid .wide { grid-column: auto; }
+      header { padding: 16px 4%; }
+    }
+  </style>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
-  <script src="flutter_bootstrap.js" async></script>
+<header>
+  <div class="logo">ANI<span>MERC</span></div>
+  <span class="muted">بوابة المستخدمين</span>
+</header>
+
+<main class="container">
+  <section id="authSection" class="panel auth-panel">
+    <div class="logo">ANIMERC</div>
+    <h1 id="authTitle">مرحبًا بعودتك</h1>
+    <p id="authDescription">سجّل الدخول للمتابعة إلى حسابك.</p>
+
+    <form id="authForm">
+      <div id="nameField" class="hidden">
+        <label for="displayName">الاسم</label>
+        <input id="displayName" maxlength="60" autocomplete="name">
+      </div>
+
+      <label for="email">البريد الإلكتروني</label>
+      <input id="email" type="email" required autocomplete="email">
+
+      <label for="password">كلمة المرور</label>
+      <input id="password" type="password" required
+             minlength="6" autocomplete="current-password">
+
+      <button id="authButton" class="btn full" type="submit">
+        تسجيل الدخول
+      </button>
+    </form>
+
+    <div class="switch">
+      <span id="switchText">ليس لديك حساب؟</span>
+      <button id="switchMode" class="link" type="button">
+        إنشاء حساب
+      </button>
+    </div>
+
+    <div id="authStatus" class="status hidden" role="status"></div>
+  </section>
+
+  <section id="dashboard" class="hidden">
+    <div class="panel">
+      <div class="top-row">
+        <div>
+          <h1 id="welcome">مرحبًا!</h1>
+          <p id="roleDescription">حسابك متصل بنجاح.</p>
+          <span id="roleBadge" class="badge">مستخدم</span>
+        </div>
+        <button id="logoutButton" class="btn btn-secondary" type="button">
+          تسجيل الخروج
+        </button>
+      </div>
+
+      <div id="adminSection" class="hidden">
+        <div class="section">
+          <h2>إضافة أنمي إلى Firestore</h2>
+          <p>ستُحفظ البيانات في مجموعة anime داخل مشروع Firebase الحالي.</p>
+
+          <form id="animeForm">
+            <div class="form-grid">
+              <div>
+                <label for="animeTitle">اسم الأنمي *</label>
+                <input id="animeTitle" required maxlength="150">
+              </div>
+              <div>
+                <label for="animeImage">رابط صورة الغلاف</label>
+                <input id="animeImage" type="url"
+                       placeholder="https://example.com/poster.jpg">
+              </div>
+              <div class="wide">
+                <label for="animeDescription">الوصف</label>
+                <textarea id="animeDescription" maxlength="3000"></textarea>
+              </div>
+              <div class="wide">
+                <button id="saveAnimeButton" class="btn" type="submit">
+                  حفظ الأنمي
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div id="adminStatus" class="status hidden" role="status"></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>المحتوى الموجود</h2>
+        <p>يعرض هذا القسم المستندات الموجودة في مجموعتي anime وcontents.</p>
+        <button id="refreshButton" class="btn btn-secondary" type="button">
+          تحديث البيانات
+        </button>
+        <div id="dataStatus" class="status">جارٍ تحميل البيانات...</div>
+        <div id="items" class="items"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+  import { initializeApp } from
+    "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    updateProfile,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+
+  import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    collection,
+    getDocs,
+    addDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBbwm7AKaqZKWd5UbLNLO2aO_gBmvtVua0",
+    authDomain: "skyd-415bc.firebaseapp.com",
+    projectId: "skyd-415bc",
+    storageBucket: "skyd-415bc.firebasestorage.app",
+    messagingSenderId: "966624727102",
+    appId: "1:966624727102:web:96d02db29d41e8687fc16f",
+    measurementId: "G-FW3VFSVE4X"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const $ = id => document.getElementById(id);
+
+  let isRegisterMode = false;
+  let currentUser = null;
+  let currentRole = "user";
+
+  function showStatus(id, message, type = "") {
+    const element = $(id);
+    element.textContent = message;
+    element.className = "status" + (type ? " " + type : "");
+    element.classList.remove("hidden");
+  }
+
+  function clearStatus(id) {
+    $(id).textContent = "";
+    $(id).classList.add("hidden");
+  }
+
+  function friendlyError(error) {
+    const messages = {
+      "auth/invalid-email": "البريد الإلكتروني غير صحيح.",
+      "auth/invalid-credential": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      "auth/email-already-in-use": "هذا البريد مسجل بالفعل.",
+      "auth/weak-password": "استخدم كلمة مرور من 6 أحرف على الأقل.",
+      "auth/too-many-requests": "محاولات كثيرة. حاول لاحقًا.",
+      "auth/network-request-failed": "تعذر الاتصال بالإنترنت.",
+      "permission-denied": "ليس لديك صلاحية لتنفيذ هذه العملية."
+    };
+
+    return messages[error.code] ||
+      error.message ||
+      "حدث خطأ غير متوقع.";
+  }
+
+  function setAuthMode(register) {
+    isRegisterMode = register;
+    $("authTitle").textContent =
+      register ? "إنشاء حساب جديد" : "مرحبًا بعودتك";
+    $("authDescription").textContent =
+      register ? "أنشئ حسابًا للبدء." : "سجّل الدخول للمتابعة.";
+    $("authButton").textContent =
+      register ? "إنشاء الحساب" : "تسجيل الدخول";
+    $("switchText").textContent =
+      register ? "لديك حساب بالفعل؟" : "ليس لديك حساب؟";
+    $("switchMode").textContent =
+      register ? "تسجيل الدخول" : "إنشاء حساب";
+    $("nameField").classList.toggle("hidden", !register);
+    $("password").autocomplete =
+      register ? "new-password" : "current-password";
+    clearStatus("authStatus");
+  }
+
+  $("switchMode").addEventListener("click", () => {
+    setAuthMode(!isRegisterMode);
+  });
+
+  $("authForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    clearStatus("authStatus");
+
+    const email = $("email").value.trim();
+    const password = $("password").value;
+    const name = $("displayName").value.trim();
+
+    $("authButton").disabled = true;
+
+    try {
+      if (isRegisterMode) {
+        if (!name) {
+          throw new Error("اكتب اسمك أولًا.");
+        }
+
+        const result = await createUserWithEmailAndPassword(
+          auth, email, password
+        );
+
+        await updateProfile(result.user, {
+          displayName: name
+        });
+
+        // كل حساب جديد يبدأ كمستخدم عادي.
+        // لا تسمح أبدًا باختيار دور الأدمن من صفحة التسجيل.
+        await setDoc(doc(db, "users", result.user.uid), {
+          name,
+          email,
+          role: "user",
+          createdAt: serverTimestamp()
+        });
+
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    } catch (error) {
+      showStatus("authStatus", friendlyError(error), "error");
+    } finally {
+      $("authButton").disabled = false;
+    }
+  });
+
+  $("logoutButton").addEventListener("click", async () => {
+    await signOut(auth);
+  });
+
+  function makeItemCard(data, id, source) {
+    const card = document.createElement("article");
+    card.className = "item";
+
+    if (data.imageUrl && /^https?:\/\//i.test(data.imageUrl)) {
+      const image = document.createElement("img");
+      image.src = data.imageUrl;
+      image.alt = data.title || "غلاف";
+      image.loading = "lazy";
+      image.onerror = () => image.remove();
+      card.appendChild(image);
+    }
+
+    const body = document.createElement("div");
+    body.className = "item-body";
+
+    const title = document.createElement("h3");
+    title.textContent = data.title || data.name || "بدون عنوان";
+
+    const description = document.createElement("p");
+    description.textContent = data.description || "لا يوجد وصف.";
+
+    const meta = document.createElement("div");
+    meta.className = "muted";
+    meta.textContent = `المجموعة: ${source} · ID: ${id}`;
+
+    body.append(title, description, meta);
+    card.appendChild(body);
+    return card;
+  }
+
+  async function loadContent() {
+    $("refreshButton").disabled = true;
+    $("items").replaceChildren();
+    showStatus("dataStatus", "جارٍ تحميل البيانات...");
+
+    try {
+      const sources = ["anime", "contents"];
+      let total = 0;
+
+      for (const source of sources) {
+        const snapshot = await getDocs(collection(db, source));
+
+        snapshot.forEach(item => {
+          const data = item.data();
+          $("items").appendChild(
+            makeItemCard(data, item.id, source)
+          );
+          total++;
+        });
+      }
+
+      if (total === 0) {
+        showStatus(
+          "dataStatus",
+          "لا توجد بيانات بعد. يمكن للأدمن إضافة أول أنمي."
+        );
+      } else {
+        showStatus("dataStatus", `تم تحميل ${total} عنصر بنجاح.`, "success");
+      }
+    } catch (error) {
+      showStatus("dataStatus", friendlyError(error), "error");
+    } finally {
+      $("refreshButton").disabled = false;
+    }
+  }
+
+  $("refreshButton").addEventListener("click", loadContent);
+
+  $("animeForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    clearStatus("adminStatus");
+
+    if (!currentUser || currentRole !== "admin") {
+      showStatus("adminStatus", "هذه العملية مخصصة للأدمن.", "error");
+      return;
+    }
+
+    $("saveAnimeButton").disabled = true;
+
+    try {
+      const title = $("animeTitle").value.trim();
+      const imageUrl = $("animeImage").value.trim();
+      const description = $("animeDescription").value.trim();
+
+      if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
+        throw new Error("رابط الصورة يجب أن يبدأ بـ https:// أو http://");
+      }
+
+      await addDoc(collection(db, "anime"), {
+        title,
+        imageUrl,
+        description,
+        createdAt: serverTimestamp(),
+        createdBy: currentUser.uid
+      });
+
+      $("animeForm").reset();
+      showStatus("adminStatus", "تم حفظ الأنمي بنجاح.", "success");
+      await loadContent();
+
+    } catch (error) {
+      showStatus("adminStatus", friendlyError(error), "error");
+    } finally {
+      $("saveAnimeButton").disabled = false;
+    }
+  });
+
+  async function showDashboard(user) {
+    currentUser = user;
+    currentRole = "user";
+
+    $("authSection").classList.add("hidden");
+    $("dashboard").classList.remove("hidden");
+    $("welcome").textContent = `مرحبًا ${user.displayName || user.email || ""}`;
+
+    try {
+      const profile = await getDoc(doc(db, "users", user.uid));
+
+      if (profile.exists() && profile.data().role === "admin") {
+        currentRole = "admin";
+      }
+
+      $("roleBadge").textContent =
+        currentRole === "admin" ? "أدمن" : "مستخدم عادي";
+
+      $("roleDescription").textContent =
+        currentRole === "admin"
+          ? "لديك صلاحية إدارة المحتوى."
+          : "يمكنك مشاهدة المحتوى المتاح لحسابك.";
+
+      $("adminSection").classList.toggle(
+        "hidden", currentRole !== "admin"
+      );
+
+      await loadContent();
+
+    } catch (error) {
+      showStatus("dataStatus", friendlyError(error), "error");
+    }
+  }
+
+  onAuthStateChanged(auth, async user => {
+    currentUser = user;
+
+    if (user) {
+      await showDashboard(user);
+    } else {
+      currentRole = "user";
+      $("dashboard").classList.add("hidden");
+      $("authSection").classList.remove("hidden");
+    }
+  });
+</script>
 </body>
 </html>

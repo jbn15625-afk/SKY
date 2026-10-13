@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "452120107128",
+    "project_id": "sky-d-207b0",
+    "storage_bucket": "sky-d-207b0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:452120107128:android:8a4540bbd64b3afed9f58d",
+        "android_client_info": {
+          "package_name": "com.example.sky"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "452120107128-dc9nm3jrummtt828jr518fcjfc94ddpe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1iPmxD4TbwTo2MjjeDEnWHDAbGKLP0iw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "452120107128-dc9nm3jrummtt828jr518fcjfc94ddpe.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "452120107128-ijfk5q1npq8iq679j0fsu1ol9oaq9ka7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sky"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
