@@ -71,6 +71,8 @@ class _PageLinkCardState extends State<PageLinkCard> {
                     const SizedBox(height: 15),
                     Text(
                       widget.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.cairo(
                         fontSize: 19,
                         fontWeight: FontWeight.w800,
@@ -80,6 +82,8 @@ class _PageLinkCardState extends State<PageLinkCard> {
                     const SizedBox(height: 8),
                     Text(
                       widget.description,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.cairo(
                         color: const Color(0xFFAAAAAA),
                         fontSize: 13,

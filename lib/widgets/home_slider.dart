@@ -12,10 +12,16 @@ class HomeSlider extends StatefulWidget {
     super.key,
     required this.series,
     required this.onManageSlider,
+    this.compact = false,
   });
 
   final List<SeriesItem> series;
   final VoidCallback onManageSlider;
+
+  /// نسخة مضغوطة للهاتف (هوامش وصورة وخط أصغر).
+  final bool compact;
+
+  static double heightFor(bool compact) => compact ? 290 : 310;
 
   @override
   State<HomeSlider> createState() => _HomeSliderState();
@@ -33,17 +39,22 @@ class _HomeSliderState extends State<HomeSlider> {
 
   @override
   Widget build(BuildContext context) {
+    final compact = widget.compact;
+    final height = HomeSlider.heightFor(compact);
+
     if (widget.series.isEmpty) {
-      return _EmptySlider(onManage: widget.onManageSlider);
+      return _EmptySlider(onManage: widget.onManageSlider, height: height);
     }
 
-    final item = widget.series[_index];
-    final background = item.backgroundUrl;
+    // لو تغيّرت قائمة المسلسلات (بعد إعادة التحميل) قد يصبح الفهرس خارجها.
+    final index = _index < widget.series.length ? _index : 0;
+    final item = widget.series[index];
+    final background = item.backgroundFor(compact: compact);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: SizedBox(
-        height: 310,
+        height: height,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -69,15 +80,17 @@ class _HomeSliderState extends State<HomeSlider> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(36, 28, 36, 58),
+              padding: compact
+                  ? const EdgeInsets.fromLTRB(16, 18, 16, 58)
+                  : const EdgeInsets.fromLTRB(36, 28, 36, 58),
               child: Row(
                 children: [
                   NetworkPoster(
                     url: item.coverUrl,
-                    width: 155,
-                    height: 220,
+                    width: compact ? 100 : 155,
+                    height: compact ? 150 : 220,
                   ),
-                  const SizedBox(width: 28),
+                  SizedBox(width: compact ? 16 : 28),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,7 +110,7 @@ class _HomeSliderState extends State<HomeSlider> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.cairo(
-                            fontSize: 36,
+                            fontSize: compact ? 22 : 36,
                             height: 1.2,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
@@ -155,7 +168,7 @@ class _HomeSliderState extends State<HomeSlider> {
                   children: [
                     _ControlButton(
                       label: 'السابق',
-                      onTap: () => _show(_index - 1),
+                      onTap: () => _show(index - 1),
                     ),
                     Expanded(
                       child: Row(
@@ -172,7 +185,7 @@ class _HomeSliderState extends State<HomeSlider> {
                                   height: 10,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: i == _index
+                                    color: i == index
                                         ? Colors.white
                                         : Colors.white24,
                                   ),
@@ -184,7 +197,7 @@ class _HomeSliderState extends State<HomeSlider> {
                     ),
                     _ControlButton(
                       label: 'التالي',
-                      onTap: () => _show(_index + 1),
+                      onTap: () => _show(index + 1),
                     ),
                   ],
                 ),
@@ -220,14 +233,16 @@ class _ControlButton extends StatelessWidget {
 }
 
 class _EmptySlider extends StatelessWidget {
-  const _EmptySlider({required this.onManage});
+  const _EmptySlider({required this.onManage, required this.height});
 
   final VoidCallback onManage;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 310,
+      height: height,
+      width: double.infinity,
       decoration: BoxDecoration(
         color: AppColors.panel,
         borderRadius: BorderRadius.circular(18),

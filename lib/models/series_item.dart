@@ -57,6 +57,12 @@ class SeriesItem {
     return '';
   }
 
+  /// خلفية مناسبة لحجم الشاشة: على الهاتف نفضّل خلفية الهاتف ثم نعود للباقي.
+  String backgroundFor({required bool compact}) {
+    if (compact && isHttpUrl(mobileBackgroundUrl)) return mobileBackgroundUrl;
+    return backgroundUrl;
+  }
+
   factory SeriesItem.fromMap(String id, Map<dynamic, dynamic> data) {
     return SeriesItem(
       id: id,
