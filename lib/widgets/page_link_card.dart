@@ -105,7 +105,6 @@ class _PageLinkCardState extends State<PageLinkCard> {
             ),
           ),
         ),
-      ),
     );
   }
 }
