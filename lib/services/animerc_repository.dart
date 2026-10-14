@@ -1,19 +1,41 @@
 import 'package:firebase_database/firebase_database.dart';
 
 import '../models/episode_item.dart';
+import '../models/home_data.dart';
 import '../models/series_item.dart';
 
+/// قراءة فقط: التطبيق للمشاهدة، وإدارة المحتوى تتم من موقع الويب.
 class AnimercRepository {
   AnimercRepository({FirebaseDatabase? database})
       : _database = database ?? FirebaseDatabase.instance;
 
   final FirebaseDatabase _database;
 
-  // ---------------------------------------------------------------- series
+  /// كل ما تحتاجه الصفحة الرئيسية بقراءتين فقط (series + slider).
+  Future<HomeData> fetchHomeData() async {
+    final results = await Future.wait([
+      _fetchSeriesById(),
+      _database.ref('slider').get(),
+    ]);
 
-  Future<List<SeriesItem>> fetchAllSeries() async {
-    final byId = await _fetchSeriesById();
-    return byId.values.toList();
+    final seriesById = results[0] as Map<String, SeriesItem>;
+    final sliderSnapshot = results[1] as DataSnapshot;
+
+    final slider = [
+      for (final id in _orderedIds(sliderSnapshot.value))
+        if (seriesById.containsKey(id)) seriesById[id]!,
+    ];
+
+    // المعرّفات التي تنشئها Firebase تتزايد مع الوقت، فالترتيب التنازلي
+    // يعرض الأحدث إضافةً أولًا.
+    final all = seriesById.values.toList()
+      ..sort((a, b) => b.id.compareTo(a.id));
+
+    return HomeData(
+      slider: slider,
+      movies: all.where((item) => item.isMovie).toList(),
+      series: all.where((item) => !item.isMovie).toList(),
+    );
   }
 
   Future<SeriesItem?> fetchSeries(String id) async {
@@ -22,65 +44,6 @@ class AnimercRepository {
     if (value is! Map) return null;
     return SeriesItem.fromMap(id, Map<dynamic, dynamic>.from(value));
   }
-
-  /// يضيف مسلسلًا جديدًا ويعيد المعرّف الذي أنشأته Firebase.
-  /// [data] يجب أن يحتوي كل الحقول التي تشترطها قواعد قاعدة البيانات
-  /// (بدون `id` لأنه يُضاف هنا).
-  Future<String> addSeries(Map<String, Object?> data) async {
-    final newRef = _database.ref('series').push();
-    final key = newRef.key;
-    if (key == null) {
-      throw StateError('تعذر إنشاء معرّف للمسلسل.');
-    }
-    await newRef.set({'id': key, ...data});
-    return key;
-  }
-
-  // ---------------------------------------------------------------- slider
-
-  Future<List<SeriesItem>> fetchSliderSeries() async {
-    final selectedIds = await fetchSliderIds();
-    final seriesById = await _fetchSeriesById();
-
-    return selectedIds
-        .where(seriesById.containsKey)
-        .map((id) => seriesById[id]!)
-        .toList();
-  }
-
-  Future<List<String>> fetchSliderIds() async {
-    final snapshot = await _database.ref('slider').get();
-    return _orderedIds(snapshot.value);
-  }
-
-  /// يحفظ اختيار السلايدر بنفس طريقة موقع الويب: مفاتيح "0","1",... وتُحذف
-  /// المفاتيح القديمة غير المستخدمة. نستخدم update (وليس set) لأن قواعد
-  /// قاعدة البيانات تسمح بالكتابة على مستوى كل موضع وليس على العقدة كلها.
-  Future<void> saveSliderSelection(List<String> ids) async {
-    final sliderRef = _database.ref('slider');
-    final snapshot = await sliderRef.get();
-    final oldValue = snapshot.value;
-
-    final updates = <String, Object?>{};
-    if (oldValue is Map) {
-      for (final key in oldValue.keys) {
-        updates[key.toString()] = null;
-      }
-    } else if (oldValue is List) {
-      for (var i = 0; i < oldValue.length; i++) {
-        if (oldValue[i] != null) updates['$i'] = null;
-      }
-    }
-    for (var i = 0; i < ids.length; i++) {
-      updates['$i'] = ids[i];
-    }
-
-    if (updates.isNotEmpty) {
-      await sliderRef.update(updates);
-    }
-  }
-
-  // -------------------------------------------------------------- episodes
 
   Future<List<EpisodeItem>> fetchEpisodes() async {
     final snapshot = await _database.ref('episodes').get();
@@ -97,19 +60,6 @@ class AnimercRepository {
     });
     return result;
   }
-
-  /// يضيف حلقة جديدة ويعيد معرّفها.
-  Future<String> addEpisode(Map<String, Object?> data) async {
-    final newRef = _database.ref('episodes').push();
-    final key = newRef.key;
-    if (key == null) {
-      throw StateError('تعذر إنشاء معرّف للحلقة.');
-    }
-    await newRef.set({...data, 'episodeId': key});
-    return key;
-  }
-
-  // --------------------------------------------------------------- helpers
 
   Future<Map<String, SeriesItem>> _fetchSeriesById() async {
     final snapshot = await _database.ref('series').get();

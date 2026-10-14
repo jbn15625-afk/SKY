@@ -57,6 +57,14 @@ class SeriesItem {
     return '';
   }
 
+  /// الفيلم يُعرف من حقل "النوع" الذي يُدخل في الموقع (مسلسل، فيلم، أنمي).
+  bool get isMovie {
+    final value = type.toLowerCase();
+    return value.contains('فيلم') ||
+        value.contains('movie') ||
+        value.contains('film');
+  }
+
   /// خلفية مناسبة لحجم الشاشة: على الهاتف نفضّل خلفية الهاتف ثم نعود للباقي.
   String backgroundFor({required bool compact}) {
     if (compact && isHttpUrl(mobileBackgroundUrl)) return mobileBackgroundUrl;

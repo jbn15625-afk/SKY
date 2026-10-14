@@ -2,18 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../models/series_item.dart';
+import '../models/home_data.dart';
 import '../services/animerc_repository.dart';
 import '../theme/app_colors.dart';
 import '../widgets/animerc_logo.dart';
 import '../widgets/home_slider.dart';
-import '../widgets/page_link_card.dart';
-import 'add_series_screen.dart';
-import 'episodes_screen.dart';
-import 'selected_sliders_screen.dart';
-import 'series_list_screen.dart';
-import 'slider_manager_screen.dart';
+import '../widgets/poster_card.dart';
 
+/// الصفحة الرئيسية: السلايدر في الأعلى، ثم الأفلام، ثم المسلسلات.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -23,87 +19,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _repository = AnimercRepository();
-  late Future<List<SeriesItem>> _sliderFuture;
+  late Future<HomeData> _future;
 
   @override
   void initState() {
     super.initState();
-    _sliderFuture = _repository.fetchSliderSeries();
+    _future = _repository.fetchHomeData();
   }
 
   Future<void> _reload() async {
     setState(() {
-      _sliderFuture = _repository.fetchSliderSeries();
+      _future = _repository.fetchHomeData();
     });
     try {
-      await _sliderFuture;
+      await _future;
     } catch (_) {
-      // الخطأ يُعرض داخل منطقة السلايدر نفسها.
+      // الخطأ يُعرض داخل الصفحة نفسها.
     }
   }
-
-  /// يفتح [screen] وعند الرجوع منه يعيد تحميل السلايدر،
-  /// لأن بعض الصفحات (مثل إدارة السلايدر) تغيّر محتواه.
-  Future<void> _open(Widget screen) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => screen),
-    );
-    if (mounted) _reload();
-  }
-
-  List<_HomeLink> get _links => [
-        _HomeLink(
-          icon: '▤',
-          title: 'اختيار أنميات السلايدر',
-          description:
-              'اختر المسلسلات التي تريد عرضها في السلايدر على الرئيسية.',
-          action: 'إدارة السلايدر ←',
-          onTap: () => _open(const SliderManagerScreen()),
-        ),
-        _HomeLink(
-          icon: '▣',
-          title: 'السلايدرات المختارة',
-          description:
-              'عرض الأنميات المختارة مع الاسم والسنة والوصف وصورة الكمبيوتر.',
-          action: 'عرض السلايدرات ←',
-          onTap: () => _open(const SelectedSlidersScreen()),
-        ),
-        _HomeLink(
-          icon: '▦',
-          title: 'قائمة المسلسلات',
-          description: 'تصفح المسلسلات واختر مسلسلًا لعرض معلوماته وحلقاته.',
-          action: 'تصفح المسلسلات ←',
-          onTap: () => _open(const SeriesListScreen()),
-        ),
-        _HomeLink(
-          icon: 'ⓘ',
-          title: 'تفاصيل مسلسل',
-          description: 'افتح القائمة أولًا، ثم اضغط على المسلسل المطلوب.',
-          action: 'اختر مسلسلًا ←',
-          onTap: () => _open(const SeriesListScreen()),
-        ),
-        _HomeLink(
-          icon: '＋',
-          title: 'إضافة مسلسل',
-          description: 'أدخل معلومات مسلسل جديد واحفظه في قاعدة البيانات.',
-          action: 'إضافة مسلسل ←',
-          onTap: () => _open(const AddSeriesScreen()),
-        ),
-        _HomeLink(
-          icon: '▶',
-          title: 'الحلقات',
-          description: 'أضف حلقة واربطها بأحد المسلسلات الموجودة.',
-          action: 'إدارة الحلقات ←',
-          onTap: () => _open(const EpisodesScreen()),
-        ),
-        _HomeLink(
-          icon: '↪',
-          title: 'تسجيل الخروج',
-          description: 'إنهاء الجلسة الحالية والعودة إلى صفحة تسجيل الدخول.',
-          action: 'تسجيل الخروج ←',
-          onTap: () => FirebaseAuth.instance.signOut(),
-        ),
-      ];
 
   @override
   Widget build(BuildContext context) {
@@ -129,32 +62,64 @@ class _HomeScreenState extends State<HomeScreen> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.fromLTRB(
                       horizontal,
-                      compact ? 24 : 40,
+                      compact ? 16 : 28,
                       horizontal,
-                      32,
+                      40,
                     ),
                     children: [
                       Center(
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 1100),
-                          child: Column(
-                            children: [
-                              _Intro(compact: compact),
-                              SizedBox(height: compact ? 22 : 30),
-                              _SliderArea(
-                                future: _sliderFuture,
+                          constraints: const BoxConstraints(maxWidth: 1200),
+                          child: FutureBuilder<HomeData>(
+                            future: _future,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return _StateBox(
+                                  height: HomeSlider.heightFor(compact),
+                                  child: const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                );
+                              }
+
+                              if (snapshot.hasError) {
+                                return _StateBox(
+                                  height: HomeSlider.heightFor(compact),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'تعذر تحميل المحتوى. تحقق من الاتصال ثم أعد المحاولة.',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.cairo(
+                                          color: AppColors.muted,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 14),
+                                      OutlinedButton(
+                                        onPressed: _reload,
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          side: const BorderSide(
+                                            color: AppColors.border,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'إعادة المحاولة',
+                                          style: GoogleFonts.cairo(),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              return _HomeContent(
+                                data: snapshot.requireData,
                                 compact: compact,
-                                onRetry: _reload,
-                                onManageSlider: () =>
-                                    _open(const SliderManagerScreen()),
-                              ),
-                              SizedBox(height: compact ? 28 : 40),
-                              _LinksGrid(links: _links),
-                              const SizedBox(height: 40),
-                              const Divider(color: AppColors.border),
-                              const SizedBox(height: 14),
-                              const _Footer(),
-                            ],
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -170,129 +135,60 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _HomeLink {
-  const _HomeLink({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.action,
-    required this.onTap,
-  });
+class _HomeContent extends StatelessWidget {
+  const _HomeContent({required this.data, required this.compact});
 
-  final String icon;
-  final String title;
-  final String description;
-  final String action;
-  final VoidCallback onTap;
-}
-
-class _Intro extends StatelessWidget {
-  const _Intro({required this.compact});
-
+  final HomeData data;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    if (data.isEmpty) {
+      return _StateBox(
+        height: 220,
+        child: Text(
+          'لا يوجد محتوى حتى الآن.',
+          style: GoogleFonts.cairo(color: AppColors.muted),
+        ),
+      );
+    }
+
+    final gap = SizedBox(height: compact ? 28 : 40);
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'AniMerc',
-          style: GoogleFonts.cairo(
-            color: AppColors.pink,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
+        if (data.slider.isNotEmpty) ...[
+          SizedBox(
+            width: double.infinity,
+            child: HomeSlider(series: data.slider, compact: compact),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'إلى أين تريد الذهاب؟',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.cairo(
-            fontSize: compact ? 28 : 42,
-            fontWeight: FontWeight.w800,
-            color: AppColors.text,
+          gap,
+        ],
+        if (data.movies.isNotEmpty) ...[
+          PosterSection(
+            title: 'الأفلام',
+            items: data.movies,
+            compact: compact,
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'اختر الصفحة التي تريد فتحها.',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.cairo(color: AppColors.muted, fontSize: 15),
-        ),
+          gap,
+        ],
+        if (data.series.isNotEmpty)
+          PosterSection(
+            title: 'المسلسلات',
+            items: data.series,
+            compact: compact,
+          ),
       ],
     );
   }
 }
 
-class _SliderArea extends StatelessWidget {
-  const _SliderArea({
-    required this.future,
-    required this.compact,
-    required this.onRetry,
-    required this.onManageSlider,
-  });
-
-  final Future<List<SeriesItem>> future;
-  final bool compact;
-  final Future<void> Function() onRetry;
-  final VoidCallback onManageSlider;
-
-  @override
-  Widget build(BuildContext context) {
-    final height = HomeSlider.heightFor(compact);
-
-    return FutureBuilder<List<SeriesItem>>(
-      future: future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _SliderMessage(
-            height: height,
-            children: [
-              Text(
-                'جارٍ تحميل المسلسلات المختارة...',
-                style: GoogleFonts.cairo(color: AppColors.muted),
-              ),
-            ],
-          );
-        }
-
-        if (snapshot.hasError) {
-          return _SliderMessage(
-            height: height,
-            children: [
-              Text(
-                'تعذر تحميل السلايدر. تحقق من الاتصال ثم أعد المحاولة.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.cairo(color: AppColors.muted),
-              ),
-              const SizedBox(height: 14),
-              OutlinedButton(
-                onPressed: onRetry,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: AppColors.border),
-                ),
-                child: Text('إعادة المحاولة', style: GoogleFonts.cairo()),
-              ),
-            ],
-          );
-        }
-
-        return HomeSlider(
-          series: snapshot.data ?? [],
-          compact: compact,
-          onManageSlider: onManageSlider,
-        );
-      },
-    );
-  }
-}
-
-class _SliderMessage extends StatelessWidget {
-  const _SliderMessage({required this.height, required this.children});
+class _StateBox extends StatelessWidget {
+  const _StateBox({required this.height, required this.child});
 
   final double height;
-  final List<Widget> children;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -306,79 +202,7 @@ class _SliderMessage extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: children,
-      ),
-    );
-  }
-}
-
-class _LinksGrid extends StatelessWidget {
-  const _LinksGrid({required this.links});
-
-  final List<_HomeLink> links;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final columns = width >= 900
-            ? 3
-            : width >= 560
-                ? 2
-                : 1;
-
-        return GridView.count(
-          crossAxisCount: columns,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 20,
-          mainAxisSpacing: 20,
-          // ارتفاع ثابت بدل نسبة عرض/ارتفاع، حتى لا يفيض النص على الشاشات
-          // الضيقة أو عند تكبير الخط.
-          childAspectRatio: _aspectRatio(width, columns),
-          children: [
-            for (final link in links)
-              PageLinkCard(
-                icon: link.icon,
-                title: link.title,
-                description: link.description,
-                action: link.action,
-                onTap: link.onTap,
-              ),
-          ],
-        );
-      },
-    );
-  }
-
-  double _aspectRatio(double width, int columns) {
-    const spacing = 20.0;
-    const cardHeight = 270.0;
-    final cardWidth = (width - spacing * (columns - 1)) / columns;
-    return cardWidth / cardHeight;
-  }
-}
-
-class _Footer extends StatelessWidget {
-  const _Footer();
-
-  @override
-  Widget build(BuildContext context) {
-    final style = GoogleFonts.cairo(color: AppColors.muted, fontSize: 12);
-
-    return SizedBox(
-      width: double.infinity,
-      child: Wrap(
-        alignment: WrapAlignment.spaceBetween,
-        runSpacing: 6,
-        children: [
-          Text('قصتك القادمة على بُعد حلقة.', style: style),
-          Text('© 2026 Animerc — جميع الحقوق محفوظة', style: style),
-        ],
-      ),
+      child: child,
     );
   }
 }
@@ -406,11 +230,12 @@ class _HomeHeader extends StatelessWidget {
         border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: SizedBox(
-        height: compact ? 70 : 78,
+        height: compact ? 64 : 72,
         child: Row(
           children: [
             const AnimercLogo(),
             const Spacer(),
+            // مؤقتًا زر الخروج هنا، وسينتقل لصفحة البروفايل عند بنائها.
             TextButton(
               onPressed: onLogout,
               style: TextButton.styleFrom(

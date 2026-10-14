@@ -11,12 +11,10 @@ class HomeSlider extends StatefulWidget {
   const HomeSlider({
     super.key,
     required this.series,
-    required this.onManageSlider,
     this.compact = false,
   });
 
   final List<SeriesItem> series;
-  final VoidCallback onManageSlider;
 
   /// نسخة مضغوطة للهاتف (هوامش وصورة وخط أصغر).
   final bool compact;
@@ -43,7 +41,7 @@ class _HomeSliderState extends State<HomeSlider> {
     final height = HomeSlider.heightFor(compact);
 
     if (widget.series.isEmpty) {
-      return _EmptySlider(onManage: widget.onManageSlider, height: height);
+      return const SizedBox.shrink();
     }
 
     // لو تغيّرت قائمة المسلسلات (بعد إعادة التحميل) قد يصبح الفهرس خارجها.
@@ -228,54 +226,6 @@ class _ControlButton extends StatelessWidget {
         textStyle: GoogleFonts.cairo(fontSize: 13),
       ),
       child: Text(label),
-    );
-  }
-}
-
-class _EmptySlider extends StatelessWidget {
-  const _EmptySlider({required this.onManage, required this.height});
-
-  final VoidCallback onManage;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.panel,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      padding: const EdgeInsets.all(28),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'لا توجد مسلسلات مختارة للسلايدر',
-            style: GoogleFonts.cairo(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'اختر المسلسلات التي تريدها من صفحة إدارة السلايدر.',
-            style: GoogleFonts.cairo(color: AppColors.muted, fontSize: 14),
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: onManage,
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF090909),
-            ),
-            child: Text('اختيار المسلسلات', style: GoogleFonts.cairo()),
-          ),
-        ],
-      ),
     );
   }
 }
